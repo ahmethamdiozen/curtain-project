@@ -59,6 +59,7 @@ def test_analyze_returns_scene_package(client):
     assert abs(win["corners"][0][0] - 120) <= 3 and abs(win["corners"][0][1] - 60) <= 3
     assert d["focalSource"] == "default" and d["focalPx"] > 0
     assert "inference" in d["timingsMs"]
+    assert set(d["light"]) == {"wallRgb", "wallLum", "windowLum", "blackLum", "whiteLum", "noiseSigma"}
 
 
 def test_no_window_gives_fallback_rectangle():

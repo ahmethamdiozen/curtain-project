@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import {
   buildGeometry,
   CATALOG,
+  findFloorCm,
   FAMILIES,
   isConvexQuad,
   type CurtainItem,
@@ -68,6 +69,13 @@ export default function App() {
     return g ?? lastGeometry.current;
   }, [scene, corners, widthCm, heightCm]);
 
+  // Wall–floor junction in window cm; when the floor isn't visible the curtain runs past the frame.
+  const floorY = useMemo(() => {
+    if (!scene || !geometry) return 0;
+    const found = findFloorCm(scene.masks, geometry.cmToPx, geometry.widthCm, geometry.heightCm);
+    return found ?? geometry.heightCm + 150;
+  }, [scene, geometry]);
+
   if (!scene || !corners) {
     return (
       <main className="app app-empty">
@@ -126,7 +134,7 @@ export default function App() {
 
         <Stage
           scene={scene}
-          state={{ geometry, item, colorHex, amount: amounts[item.family], mode }}
+          state={{ geometry, item, colorHex, amount: amounts[item.family], floorY, mode }}
           corners={corners}
           editCorners={editCorners}
           cornersInvalid={cornersInvalid}

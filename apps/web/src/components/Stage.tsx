@@ -34,7 +34,7 @@ export function Stage({ scene, state, corners, editCorners, cornersInvalid, onCo
     }
     let r: CurtainRenderer;
     try {
-      r = new CurtainRenderer(gl);
+      r = new CurtainRenderer(canvas, gl);
     } catch (e) {
       setGlError(`Görüntüleyici başlatılamadı: ${(e as Error).message}`);
       return;
@@ -58,7 +58,10 @@ export function Stage({ scene, state, corners, editCorners, cornersInvalid, onCo
       photo: scene.photo,
       occluder: scene.occluder,
       limit: scene.limit,
+      window: scene.window,
       shading: scene.shading,
+      focalPx: scene.data.focalPx,
+      light: scene.data.light,
     });
   }, [scene, width, height, fabricsReady]);
 
@@ -68,6 +71,10 @@ export function Stage({ scene, state, corners, editCorners, cornersInvalid, onCo
     const next: RenderState = state.geometry
       ? { ...state, geometry: state.geometry }
       : { ...state, geometry: PLACEHOLDER_GEOMETRY, mode: 'original' };
+    if (import.meta.env.DEV) {
+      // Debug hook for headless visual checks: window.__curtain.rerender()
+      (window as unknown as Record<string, unknown>).__curtain = { renderer: renderer.current, rerender: () => renderer.current?.render(next) };
+    }
     const id = requestAnimationFrame(() => renderer.current?.render(next));
     return () => cancelAnimationFrame(id);
   });

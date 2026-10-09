@@ -4,4 +4,8 @@ export * from './aspect';
 export * from './color';
 export * from './catalog';
 export * from './scene';
+export * from './pose';
+export * from './drape';
+export * from './floor';
+export * from './matching';
 export * from './renderer';

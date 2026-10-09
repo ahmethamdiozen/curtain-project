@@ -12,6 +12,7 @@ from PIL import Image
 
 from .groups import normalize_label
 from .imageio import load_working_image
+from .light import light_stats
 from .segmentation import SegResult
 from .shading import encode_shading, shading_map
 from .windows import fallback_window, find_windows, upright_outer
@@ -68,6 +69,7 @@ def analyze(data: bytes, segmenter: SegmenterLike) -> dict:
     wall_ids = [i for i, label in res.id2label.items() if normalize_label(label) in SHADING_LABELS]
     valid = np.isin(res.class_map, wall_ids) & (gp["window"] < 0.5) & (gp["curtain"] < 0.5)
     shading = shading_map(wi.rgb, valid)
+    light = light_stats(wi.rgb, valid, gp["window"] > 0.5)
 
     ids, counts = np.unique(res.class_map, return_counts=True)
     class_stats = sorted(
@@ -86,6 +88,7 @@ def analyze(data: bytes, segmenter: SegmenterLike) -> dict:
         "focalSource": wi.focal_source,
         "classStats": [c for c in class_stats if c["frac"] >= 0.005][:15],
         "existingCurtainFrac": round(curtain_frac, 4),
+        "light": light,
         "timingsMs": {"inference": round(res.inference_ms, 1),
                       "total": round((time.perf_counter() - t0) * 1000.0, 1)},
         "device": res.device,
