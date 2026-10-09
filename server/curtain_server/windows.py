@@ -63,9 +63,15 @@ def find_windows(window_prob: np.ndarray, min_area_frac: float = 0.005, thresh: 
         contours, _ = cv2.findContours(comp, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         hull = cv2.convexHull(np.vstack(contours))
         quad = order_corners(_fit_quad(hull))
+        if not _plausible_widths(quad):
+            quad = np.array(upright_outer(quad.tolist()))
         area = cv2.contourArea(quad.astype(np.float32)) / (h * w)
         out.append(Window([[round(float(x), 1), round(float(y), 1)] for x, y in quad], round(area, 4)))
-    out.sort(key=lambda win: -win.area_frac)
+    # A window cut off by the image border can't be measured properly: rank it after complete ones.
+    def clipped(win: Window) -> bool:
+        return any(x <= 2 or y <= 2 or x >= w - 3 or y >= h - 3 for x, y in win.corners)
+
+    out.sort(key=lambda win: (clipped(win), -win.area_frac))
     return out
 
 
@@ -78,6 +84,18 @@ def upright_outer(corners: list[list[float]]) -> list[list[float]]:
     (tlx, tly), (trx, try_), (brx, bry), (blx, bly) = corners
     left, right = min(tlx, blx), max(trx, brx)
     return [[left, tly], [right, try_], [right, bry], [left, bly]]
+
+
+def _plausible_widths(q: np.ndarray, lo: float = 0.75) -> bool:
+    """Phone photos are taken roughly level: top and bottom edges of a window have similar lengths.
+
+    A much narrower top usually comes from a non-rectangular outline (pointed/round arch), not from
+    camera pitch.
+    """
+    top = float(np.linalg.norm(q[1] - q[0]))
+    bottom = float(np.linalg.norm(q[2] - q[3]))
+    r = top / bottom if bottom > 0 else 0.0
+    return lo < r < 1 / lo
 
 
 def fallback_window(w: int, h: int) -> Window:

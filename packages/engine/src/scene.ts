@@ -30,9 +30,13 @@ export function buildGeometry(inp: GeometryInput): Geometry | null {
     heightCm = inp.heightCm;
     aspectSource = 'user';
   } else {
-    const est = estimateAspect(corners, focalPx, [imageSize[0] / 2, imageSize[1] / 2]);
+    const px = pixelAspect(corners);
+    let est = estimateAspect(corners, focalPx, [imageSize[0] / 2, imageSize[1] / 2]);
+    // A perspective correction this large is almost always a non-rectangular outline (arched
+    // window) or a bad corner drag, not real geometry.
+    if (est && (est / px > 2.5 || est / px < 0.4)) est = null;
     aspectSource = est ? 'estimated' : 'pixel';
-    heightCm = widthCm / (est ?? pixelAspect(corners));
+    heightCm = widthCm / (est ?? px);
   }
   const rect: Quad = [[0, 0], [widthCm, 0], [widthCm, heightCm], [0, heightCm]];
   const cmToPx = solveHomography(rect, corners);

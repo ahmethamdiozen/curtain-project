@@ -68,7 +68,7 @@ export function Uploader({ busy, error, onFile, onSample }: Props) {
           <div className="sample-row">
             {samples.map((s) => (
               <button key={s} className="sample" disabled={busy} onClick={() => onSample(s)}>
-                <img src={assetUrl(`samples/${s}`)} alt={`Örnek oda: ${s.replace('.jpg', '')}`} loading="lazy" />
+                <img src={assetUrl(`samples/thumbs/${s}`)} alt={`Örnek oda: ${s.replace('.jpg', '')}`} loading="lazy" />
               </button>
             ))}
           </div>

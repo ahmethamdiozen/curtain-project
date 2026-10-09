@@ -29,3 +29,14 @@ describe('buildGeometry', () => {
     expect(buildGeometry({ corners: bad, widthCm: 120, focalPx: 1500, imageSize: [1280, 960] })).toBeNull();
   });
 });
+
+describe('buildGeometry plausibility', () => {
+  it('falls back to the pixel aspect when the perspective estimate is implausible', () => {
+    // narrow-topped quad (pointed arch outline) → Zhang–He reads extreme pitch
+    const arch: Quad = [[511, 262], [574, 252], [612, 458], [489, 464]];
+    const g = buildGeometry({ corners: arch, widthCm: 120, focalPx: 924, imageSize: [1280, 853] })!;
+    expect(g.aspectSource).toBe('pixel');
+    expect(g.heightCm).toBeGreaterThan(100);
+    expect(g.heightCm).toBeLessThan(300);
+  });
+});

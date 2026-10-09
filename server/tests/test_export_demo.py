@@ -7,6 +7,15 @@ from scripts.export_demo import export_demo
 from tests.test_api import FakeSegmenter
 
 
+def test_export_writes_small_thumbnails(tmp_path):
+    src = tmp_path / "samples"
+    src.mkdir()
+    Image.new("RGB", (1920, 1280), (180, 170, 160)).save(src / "big.jpg")
+    export_demo([src / "big.jpg"], tmp_path / "demo", FakeSegmenter(), thumbs=src / "thumbs")
+    thumb = Image.open(src / "thumbs" / "big.jpg")
+    assert thumb.width == 320 and abs(thumb.height - 213) <= 1
+
+
 def test_export_writes_index_and_scene_packages(tmp_path):
     src = tmp_path / "samples"
     src.mkdir()

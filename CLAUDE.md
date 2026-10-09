@@ -30,7 +30,7 @@ packages/engine/ (saf TS — React/DOM bağımsız; three.js'e canvas+context d�
     matching.ts                        light istatistikleri → pozlama, beyaz dengesi
     renderer.ts  shaders/composite.ts  three.js: 3B perde → gölge yakalayıcılar → kompozit
 apps/web/ (React + Vite + TS)  yükleme, editör, köşe tutamakları, katalog/renk paneli
-assets/samples/  açık lisanslı test fotoğrafları (CREDITS.md'de atıflar)
+assets/samples/  15 açık lisanslı test fotoğrafı (CREDITS.md'de atıflar); thumbs/ = seçici için 320 px
 assets/fabrics/  placeholder gri tonlu tekrarlanabilir kumaş dokuları (scripts ile üretilir)
 assets/demo/     örneklerin önceden hesaplanmış sahne paketleri (statik Pages demosu)
 ```
@@ -90,7 +90,7 @@ npm run dev -w apps/web             # http://localhost:5173, /api → :8000 prox
 npm run build -w apps/web
 
 # Statik demo (GitHub Pages, .github/workflows/pages.yml): örnekler assets/demo/*.json'dan okunur
-cd server && .venv/bin/python -m scripts.export_demo      # analiz/maske değişince yeniden üret
+cd server && .venv/bin/python -m scripts.export_demo      # analiz/maske değişince ya da örnek eklenince (thumbs da üretir)
 VITE_BASE=/curtain-project/ VITE_STATIC_DEMO=true npm run build -w apps/web
 ```
 
@@ -102,6 +102,9 @@ VITE_BASE=/curtain-project/ VITE_STATIC_DEMO=true npm run build -w apps/web
   verme (gl_FragColor uyumluluğu kaybolur).
 - Gölge haritası yalnızca `wall`/`column` piksellerinden, doğrusal luminans oranıyla hesaplanır.
 - Mevcut perde varsa köşe önerisi `window ∪ curtain` maskesinden çıkar ve yan kenarlar dışa doğru dikeyleştirilir.
+- Kadraj kenarında kesilen pencereler sıralamada sona atılır; üst/alt genişlik oranı 0.75–1.33 dışındaki
+  öneriler (kemerli pencereler) dikey kenarlı dörtgene çevrilir. Engine'de tahmini en/boy piksel
+  oranından 2.5 kattan fazla saparsa piksel oranına düşülür.
 
 - Model: `nvidia/segformer-b5-finetuned-ade-640-640`; cihaz cuda → mps → cpu.
 - Odak: EXIF `FocalLengthIn35mmFilm` → `f_px = f35 / 43.27 × köşegen_px`; yoksa 26 mm varsayılır.

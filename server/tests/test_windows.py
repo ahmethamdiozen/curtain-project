@@ -66,3 +66,23 @@ def test_partially_occluded_window_keeps_upright_edges():
     assert np.abs(c[1] - [600, 100]).max() <= 6  # TR
     assert np.abs(c[2] - [600, 400]).max() <= 6  # BR
     assert abs(c[3][0] - c[0][0]) < 40  # left edge stays near-vertical
+
+
+def test_window_cut_by_image_border_ranks_after_a_complete_one():
+    # bigger window cut off at the right image edge vs. a smaller, fully visible one
+    m = _quad_mask(400, 800, [[100, 100], [300, 100], [300, 300], [100, 300]])
+    m += _quad_mask(400, 800, [[520, 60], [799, 60], [799, 360], [520, 360]])
+    wins = find_windows(m)
+    assert len(wins) == 2
+    assert wins[0].corners[0][0] < 200  # the complete window comes first
+    assert wins[1].area_frac > wins[0].area_frac
+
+
+def test_pointed_arch_window_gets_upright_sides():
+    # gothic window: rectangle with a pointed arch on top → hull narrows sharply toward the tip
+    m = _quad_mask(600, 800, [[300, 250], [420, 250], [420, 460], [300, 460]])
+    cv2.fillPoly(m, [np.array([[300, 250], [360, 150], [420, 250]], np.int32)], 1.0)
+    c = np.array(find_windows(m)[0].corners)
+    top_w, bottom_w = c[1][0] - c[0][0], c[2][0] - c[3][0]
+    assert 0.75 < top_w / bottom_w < 1.33
+    assert abs(c[0][0] - 300) <= 4 and abs(c[1][0] - 420) <= 4
