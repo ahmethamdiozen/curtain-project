@@ -7,3 +7,5 @@ __pycache__/
 .superpowers/
 .DS_Store
 *.egg-info/
+*.swp
+*.swo
