@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+server/.venv/
+__pycache__/
+.pytest_cache/
+.superpowers/
+.DS_Store
+*.egg-info/

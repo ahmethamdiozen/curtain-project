@@ -1,0 +1,9 @@
+[project]
+name = "curtain-server"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["model: runs the real SegFormer model (slow, downloads weights)"]
+addopts = "-m 'not model'"
